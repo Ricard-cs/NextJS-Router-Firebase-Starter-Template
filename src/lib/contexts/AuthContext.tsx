@@ -4,6 +4,7 @@ import React, { createContext, useEffect, useState } from "react";
 import { signInWithPopup, GoogleAuthProvider, signOut as firebaseSignOut } from "firebase/auth";
 import { User } from "firebase/auth";
 import { auth } from "../firebase/firebase";
+import { initializeUserProfile } from "../firebase/firebaseUtils";
 
 interface AuthContextType {
   user: User | null;
@@ -35,7 +36,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      await initializeUserProfile(result.user);
     } catch (error) {
       console.error("Error signing in with Google", error);
     }

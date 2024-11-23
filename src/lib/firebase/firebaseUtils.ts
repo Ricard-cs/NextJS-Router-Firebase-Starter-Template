@@ -11,6 +11,11 @@ import {
   doc,
   updateDoc,
   deleteDoc,
+  query,
+  orderBy,
+  where,
+  limit,
+  getDoc,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -51,4 +56,67 @@ export const uploadFile = async (file: File, path: string) => {
   const storageRef = ref(storage, path);
   await uploadBytes(storageRef, file);
   return getDownloadURL(storageRef);
+};
+
+// Posts
+export const createPost = async (data: Omit<Post, 'id'>) => {
+  return addDoc(collection(db, 'posts'), {
+    ...data,
+    createdAt: Date.now(),
+    likes: [],
+    comments: []
+  });
+};
+
+export const getFeedPosts = async (limitCount = 20) => {
+  const q = query(
+    collection(db, 'posts'),
+    orderBy('createdAt', 'desc'),
+    limit(limitCount)
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  } as Post));
+};
+
+export const getUserPosts = async (userId: string) => {
+  const q = query(
+    collection(db, 'posts'),
+    where('userId', '==', userId),
+    orderBy('createdAt', 'desc')
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  } as Post));
+};
+
+// Profiles
+export const createUserProfile = async (userId: string, data: Partial<UserProfile>) => {
+  return await updateDoc(doc(db, 'profiles', userId), {
+    ...data,
+    id: userId,
+    createdAt: Date.now()
+  });
+};
+
+export const getUserProfile = async (userId: string) => {
+  const docRef = doc(db, 'profiles', userId);
+  const docSnap = await getDoc(docRef);
+  return docSnap.exists() ? docSnap.data() as UserProfile : null;
+};
+
+export const initializeUserProfile = async (user: User) => {
+  const profile = await getUserProfile(user.uid);
+  if (!profile) {
+    await addDoc(collection(db, 'profiles'), {
+      id: user.uid,
+      name: user.displayName || 'Anonymous',
+      imageUrl: user.photoURL || '',
+      createdAt: Date.now()
+    });
+  }
 };
