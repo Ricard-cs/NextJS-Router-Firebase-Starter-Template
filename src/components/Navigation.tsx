@@ -22,7 +22,9 @@ export default function Navigation() {
       <div className="flex justify-around items-center h-16">
         {tabs.map((tab) => {
           const Icon = tab.icon;
-          const isActive = pathname === tab.href;
+          const isActive = tab.href === "/"
+            ? pathname === "/"
+            : pathname.startsWith(tab.href);
           
           return (
             <Link
