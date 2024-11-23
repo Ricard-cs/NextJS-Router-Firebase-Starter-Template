@@ -1,7 +1,7 @@
 import "./globals.css";
 import { AuthProvider } from "@/lib/contexts/AuthContext";
 import Navigation from "@/components/Navigation";
-import { Toaster } from "@/components/ui/Toaster";
+import { ToasterProvider } from "@/components/ui/Toaster";
 
 export default function RootLayout({
   children,
@@ -12,11 +12,12 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
-          <main className="min-h-screen bg-gray-50">
-            {children}
-            <Navigation />
-          </main>
-          <Toaster />
+          <ToasterProvider>
+            <main className="min-h-screen bg-gray-50">
+              {children}
+              <Navigation />
+            </main>
+          </ToasterProvider>
         </AuthProvider>
       </body>
     </html>
